@@ -26,10 +26,10 @@ public class TwitterProducer {
     private Logger logger= LoggerFactory.getLogger(TwitterProducer.class);
 
     //keys are re-generated in twitter to protect the developer account. So the following keys are invalid
-    private String consumerKey="DTdmDWCxj7jPfMjwHZAT5VlHb";
-    private String consumerSecret="QvABlNX6aXY6NlgUj01tUdjt4WqMfQgAoLyu7S8x2i1F8iOPAf";
-    private String token="86780999-p0TzDaVE4IsJz1yCabmhuFzNcqwRXzXMxWgZE15Kf";
-    private String secret="sVE1gJ4ZcMRtVvKGnNMrfiQqk7sMC35Ekb0IWIiz0advB";
+    private String consumerKey="BJcK3GooJhKj2ohsqw2Hp0dfZ";
+    private String consumerSecret="YDFuG32GF0eEMX6eJmv4VJeTkfrwT44auMgxIC6TLkijBS6jVJ";
+    private String token="86780999-LCKBbsShzvdf8HKKa9hUdIFy0GQUAcTZBdIBz1OCu";
+    private String secret="ccOTYJfT0Tnn9l1D2JSeZpdf8MzPKy6TYnE4qzu92zw2Q";
 
 
 
@@ -105,7 +105,7 @@ public class TwitterProducer {
         StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
 
     // Optional: set up some followings and track terms
-        List<String> terms = Lists.newArrayList("kafka");
+        List<String> terms = Lists.newArrayList("india", "litmus7", "kochi");
         hosebirdEndpoint.trackTerms(terms);
 
     // These secrets should be read from a config file
@@ -140,7 +140,14 @@ public class TwitterProducer {
         properties.setProperty(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "5"); // Our Kafka 2.0 >= 1.1, so we can set this as 5. Otherwise use 1.
         //above 3 properties are implied in Kafka>=0.11 when idempotence=true. Added for clarity only
 
-        KafkaProducer producer=new KafkaProducer(properties);
+        //high throughput producer (at the expense of a bit of latency and CPU usage)
+        properties.setProperty(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");  //none, snappy, lz4, gzip
+        properties.setProperty(ProducerConfig.LINGER_MS_CONFIG, "20");  //default 0
+        properties.setProperty(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024));  // 32KB, default 16KB
+
+
+        //Create producer
+        KafkaProducer<String,String> producer=new KafkaProducer<String, String>(properties);
         return producer;
     }
 
