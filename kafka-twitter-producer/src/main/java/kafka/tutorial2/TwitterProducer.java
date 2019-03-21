@@ -26,10 +26,10 @@ public class TwitterProducer {
     private Logger logger= LoggerFactory.getLogger(TwitterProducer.class);
 
     //keys are re-generated in twitter to protect the developer account. So the following keys are invalid
-    private String consumerKey="BJcK3GooJhKj2ohsqw2Hp0dfZ";
-    private String consumerSecret="YDFuG32GF0eEMX6eJmv4VJeTkfrwT44auMgxIC6TLkijBS6jVJ";
-    private String token="86780999-LCKBbsShzvdf8HKKa9hUdIFy0GQUAcTZBdIBz1OCu";
-    private String secret="ccOTYJfT0Tnn9l1D2JSeZpdf8MzPKy6TYnE4qzu92zw2Q";
+    private String consumerKey="xxxx";
+    private String consumerSecret="xxxx";
+    private String token="xxxx";
+    private String secret="xxxx";
 
 
 
