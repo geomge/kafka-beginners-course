@@ -1,4 +1,4 @@
-package com.geogeorge.kafka.tutorial1;
+package com.geogeorge.kafka.basics;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

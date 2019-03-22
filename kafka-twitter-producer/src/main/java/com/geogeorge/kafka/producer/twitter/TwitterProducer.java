@@ -1,4 +1,4 @@
-package com.geogeorge.kafka.tutorial2;
+package com.geogeorge.kafka.producer.twitter;
 
 import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
@@ -26,10 +26,10 @@ public class TwitterProducer {
     private Logger logger= LoggerFactory.getLogger(TwitterProducer.class);
 
     //keys are re-generated in twitter to protect the developer account. So the following keys are invalid
-    private String consumerKey="xxx";
-    private String consumerSecret="xxx";
-    private String token="xxx";
-    private String secret="xxx";
+    private String consumerKey="xxxx";
+    private String consumerSecret="xxxx";
+    private String token="xxxx";
+    private String secret="xxxx";
 
 
 
