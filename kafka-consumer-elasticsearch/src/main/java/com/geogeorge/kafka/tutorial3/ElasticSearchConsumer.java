@@ -106,7 +106,7 @@ public class ElasticSearchConsumer {
 
 
         //close the client gracefully
-        client.close();
+        //client.close();
 
 
     }
