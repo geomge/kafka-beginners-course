@@ -1,5 +1,6 @@
 package com.geogeorge.kafka.consumer.elasticsearch;
 
+import com.google.gson.JsonParser;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -63,6 +64,8 @@ public class ElasticSearchConsumer {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");  //earliest/latest/none
+        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");  //disable auto commit of offsets
+        properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "10");  //limit number of records fetched in a poll
 
         //create consumer
         KafkaConsumer<String, String> consumer=new KafkaConsumer<String, String>(properties);
@@ -73,20 +76,17 @@ public class ElasticSearchConsumer {
         return  consumer;
     }
 
+    private static String extractIdFromTweet(String tweetJson){
+        //gson library
+        JsonParser jsonParser=new JsonParser();
+        return jsonParser.parse(tweetJson).getAsJsonObject().get("id_str").getAsString();
+    }
+
     public static void main(String[] args) throws IOException {
 
         Logger logger=LoggerFactory.getLogger(ElasticSearchConsumer.class.getName());
 
         RestHighLevelClient client=createClient();
-
-        String jsonString="{\"foo\":\"bar\"}";
-
-        IndexRequest indexRequest=new IndexRequest("twitter","tweets","2")
-                .source(jsonString, XContentType.JSON); //no id for now
-
-        IndexResponse indexResponse=client.index(indexRequest, RequestOptions.DEFAULT);
-
-        logger.info("Index ID: "+indexResponse.getId());
 
         //create consumer
         KafkaConsumer<String, String> consumer=createConsumer("twitter_topic");
@@ -95,17 +95,40 @@ public class ElasticSearchConsumer {
         while(true){
             ConsumerRecords<String, String> records =
                     consumer.poll(Duration.ofMillis(100)); //new in Kafka 2.0.0
-
+            logger.info("Received "+records.count()+" records.");
             for(ConsumerRecord<String, String> record:records){
-                logger.info("Key: "+record.key()+", Value: "+record.value());
-                logger.info("Partition: "+record.partition()+", Offset: "+record.offset());
+
+                //2 strategies for creating a unique id
+                //1. Kafka Generic id
+                //String id = record.topic()+"_"+record.partition()+"_"+record.offset();
+                //2. Leverage application ID. In this case, get tweet id_str
+                String id=extractIdFromTweet(record.value());
+
+                //insert data to elastic search
+                IndexRequest indexRequest=new IndexRequest("twitter","tweets", id) //use an id to make our consumer idempotent
+                        .source(record.value(), XContentType.JSON);
+
+                try{
+                    IndexResponse indexResponse=client.index(indexRequest, RequestOptions.DEFAULT);
+                    logger.info("Index ID: "+indexResponse.getId());
+                } catch (Exception e){
+                    logger.warn("Elastic Search API call failed: " + e.getMessage());
+                    logger.warn("Skipping bad data: "+record.value());
+                }
+            }
+            logger.info("Committing offsets...");
+            consumer.commitSync();
+            logger.info("Offsets have been committed!");
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-
-
         //close the client gracefully
         //client.close();
-
-
     }
+
+
 }

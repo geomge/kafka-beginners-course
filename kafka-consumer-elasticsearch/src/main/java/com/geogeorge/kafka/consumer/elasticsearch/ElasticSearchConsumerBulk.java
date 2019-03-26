@@ -33,9 +33,9 @@ public class ElasticSearchConsumerBulk {
 
     public static RestHighLevelClient createClient(){
 
-        String hostname="xxxx";
-        String username="xxxx";
-        String password="xxxx";
+        String hostname="kafka-poc-9205961597.ap-southeast-2.bonsaisearch.net";
+        String username="4wr689sq71";
+        String password="wu975h6nhi";
 
         //Don't do this if you've local ES
         final CredentialsProvider credentialsProvider=new BasicCredentialsProvider();
